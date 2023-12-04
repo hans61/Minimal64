@@ -10,15 +10,12 @@ nextLevel:	JPS _Clear          ; Clear screen
 			JPS buildTileMap
 			JPS printInfo
 			JPS printMoves
-			JPS printTagets
-			;HLT
 			JPS printTileMap
 			JPS printPlayer
 			
 gameLoop:	
 			CLB dX
 			CLB dY
-			JPS printTagets		; Update destination display
 			LDA allTargets
 			CPA cntTargets
 			BEQ levelDone
@@ -128,7 +125,8 @@ moveBox:	LDI	<_box				; change box in destination to map
 moveBox1:	INB cntTargets			; free target -> move ok -> box is in destination increase counter
 			LDI	<_boxtarget			; box on target set in map
 			STR tmpPtr
-moveBox2:	JPS printBox			; paint box in the new target
+moveBox2:	JPS incPushes
+			JPS printBox			; paint box in the new target
 			LDA xPosPlayer			; 0..20
 			ADA dX
 			STA xPos
@@ -153,6 +151,16 @@ moveBox4:	STR tmpPtr
 
 
 levelDone:	
+			LDI 10 STA _YPos
+			LDI 1 STA _XPos
+			JPS printLine ' @_________________________________@ ', 0
+			LDI 11 STA _YPos
+			LDI 1 STA _XPos
+			JPS printLine ' @ LEVEL FINISHED PRESS ANY BUTTON @ ', 0
+			LDI 12 STA _YPos
+			LDI 1 STA _XPos
+			JPS printLine ' @_________________________________@ ', 0
+			JPS _WaitInput
 incLevel:	LDA level
 			INC
 			CPI 91					; max level 90
@@ -195,6 +203,7 @@ pMB4:		JPS printPlayer			; delete player sprite
 			ANI 0x80
 			CPI 0x00
 			BEQ noMB				; there is no need to move a box
+			JPS incPushes
 			LYA yPosPlayer			; box must be moved to the old player position
 			LXA xPosPlayer
 			JPS calcMapPtr
@@ -260,14 +269,14 @@ countUnits:
 			PHS						; remember A, A = A/[100|10]
 			LDA tmp04
 			ADI 0x2f
-			PHS JPS _PrintChar PLS
+			PHS JPS printCharXY PLS
 			LDI 10
 			STA tmp03
 			DEB tmp02				; loop counter three digits (changed a)
 			PLS						; get memorized A
 			BNE nextDigit			; digits ready?
 			ADI 0x30
-			PHS JPS _PrintChar PLS
+			PHS JPS printCharXY PLS
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; increment cntMoves (word)
@@ -286,6 +295,23 @@ incMoves:	CLB bcdC
 			LDA result
 			STA cntMoves+1
 			JPA printMoves
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; increment cntMoves (word)
+incPushes:	CLB bcdC
+			LDI 0x01
+			STA sum1
+			LDA cntPushes+0
+			STA sum2
+			JPS bcdAdd
+			LDA result
+			STA cntPushes+0
+			CLB sum1
+			LDA cntPushes+1
+			STA sum2
+			JPS bcdAdd
+			LDA result
+			STA cntPushes+1
+			JPA printPushes
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; bcd for large numbers for faster printing
 ; add bcd -> result = sum1 + sum1 carry in bcdC
@@ -555,6 +581,7 @@ buildTileMap:
 			CLB allTargets
 			CLB cntTargets
 			CLW cntMoves
+			CLW cntPushes
 			LXI 0x00
 bcTM1:		LDI 0x00
 			STR tmpPtr
@@ -678,105 +705,111 @@ bytesCounter: 0x00,
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; output on the left edge of the screen
 printInfo:	CLB _YPos
-			LDI 0x28			; 40 (0..49)
-			STA _XPos
-			PHS LDI <text1 PHS LDI >text1 PHS JPS _Print PLS PLS PLS
+			LDI 29 STA _XPos
+			JPS printLine 'SOKOBAN', 0
+			
+			LDI 2 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'LEVEL:', 0
+			
+			LDI 4 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'MOVES:', 0
+			
+			LDI 6 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'PUSHES:0000', 0
+
+			LDI 8 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine '___________', 0
+			
+			LDI 10 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'KEYS:', 0
+
+			LDI 11 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'MOVE: [\]^', 0
+
+			LDI 12 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'R:MOVE BACK', 0
+
+			LDI 13 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'N: RESTART', 0
+
+			LDI 14 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'CHANGE', 0
+			LDI 15 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'LEVEL:', 0
+
+			LDI 16 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine 'G: GO TO', 0
+
+			LDI 17 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine '+ OR PGUP', 0
+
+			LDI 18 STA _YPos
+			LDI 29 STA _XPos
+			JPS printLine '- OR PGDN', 0
+
+			;LDI 0x10
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text5 PHS LDI >text5 PHS JPS _Print PLS PLS PLS
+			;LDI 0x11
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text6 PHS LDI >text6 PHS JPS _Print PLS PLS PLS
+			;LDI 0x12
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text7 PHS LDI >text7 PHS JPS _Print PLS PLS PLS
+			;LDI 0x13
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text8 PHS LDI >text8 PHS JPS _Print PLS PLS PLS
+			;LDI 0x14
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text9 PHS LDI >text9 PHS JPS _Print PLS PLS PLS
+			;LDI 0x15
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text10 PHS LDI >text10 PHS JPS _Print PLS PLS PLS
+			;LDI 0x16
+			;STA _YPos
+			;LDI 0x25
+			;STA _XPos
+			;PHS LDI <text11 PHS LDI >text11 PHS JPS _Print PLS PLS PLS
+			
 			LDI 0x02
 			STA _YPos
-			LDI 0x28
-			STA _XPos
-			PHS LDI <text2 PHS LDI >text2 PHS JPS _Print PLS PLS PLS
-			LDI 0x06
-			STA _YPos
-			LDI 0x28
-			STA _XPos
-			PHS LDI <text3 PHS LDI >text3 PHS JPS _Print PLS PLS PLS
-			LDI 0x0a
-			STA _YPos
-			LDI 0x28
-			STA _XPos
-			PHS LDI <text4 PHS LDI >text4 PHS JPS _Print PLS PLS PLS
-			LDI 0x0e
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text5 PHS LDI >text5 PHS JPS _Print PLS PLS PLS
-			LDI 0x0f
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text6 PHS LDI >text6 PHS JPS _Print PLS PLS PLS
-			LDI 0x10
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text7 PHS LDI >text7 PHS JPS _Print PLS PLS PLS
-			LDI 0x11
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text8 PHS LDI >text8 PHS JPS _Print PLS PLS PLS
-			LDI 0x12
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text9 PHS LDI >text9 PHS JPS _Print PLS PLS PLS
-			LDI 0x13
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text10 PHS LDI >text10 PHS JPS _Print PLS PLS PLS
-			LDI 0x14
-			STA _YPos
-			LDI 0x25
-			STA _XPos
-			PHS LDI <text11 PHS LDI >text11 PHS JPS _Print PLS PLS PLS
-			LDI 0x04
-			STA _YPos
-			LDI 0x2a
+			LDI 37
 			STA _XPos
 			LDA level
 			STA regA
 			JPS printThreeDigitNumber
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-text1:	'SOKOBAN', 0
-text2:	' LEVEL', 0
-text3:	' MOVES', 0
-text4:	'TARGETS', 0
-text5:	'MOVE:', 0
-text6:	'CURSOR KEYS', 0
-text7:	'N: RESTART', 0
-text8:	'R: MOVE BACK', 0
-text9:	'G:GO TO LEVEL', 0
-text10:	'CHANGE LEVEL', 0
-text11:	'+/- PgUp/PgDn', 0
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; print number of targets
-printTagets:
-			LDI 0x0c
-			STA _YPos
-			LDI 0x28
-			STA _XPos
-			LDA cntTargets
-			STA regA
-			JPS printThreeDigitNumber
-			LDI '/'
-			PHS JPS _PrintChar PLS
-			LDA allTargets
-			STA regA
-			JPS printThreeDigitNumber
-			RTS
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; print number of moves
 printMoves:
-			LDI 0x08
+			LDI 0x04
 			STA _YPos
-			LDI 0x29
+			LDI 36
 			STA _XPos
-			LDI '0'				; for symmetry
-			PHS JPS _PrintChar PLS
-
 			LXI 0x01
 pM1:
 			LTX cntMoves
@@ -784,33 +817,55 @@ pM1:
 			RL5
 			ANI 0x0f
 			ADI 0x30
-			PHS JPS _PrintChar PLS
+			PHS JPS printCharXY PLS
 			PLS
 			ANI 0x0f
 			ADI 0x30
-			PHS JPS _PrintChar PLS
+			PHS JPS printCharXY PLS
 			DEX
 			BPL pM1
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; print number of moves
+printPushes:
+			LDI 0x06
+			STA _YPos
+			LDI 36
+			STA _XPos
+			LXI 0x01
+pP1:
+			LTX cntPushes
+			PHS
+			RL5
+			ANI 0x0f
+			ADI 0x30
+			PHS JPS printCharXY PLS
+			PLS
+			ANI 0x0f
+			ADI 0x30
+			PHS JPS printCharXY PLS
+			DEX
+			BPL pP1
+			RTS
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; enter a level number and save in level
 readLevel:	
-			LDI 0x0a
+			LDI 8
 			STA _YPos
-			LDI 0x08
+			LDI 6
 			STA _XPos
-			PHS LDI <rLtxt1 PHS LDI >rLtxt1 PHS JPS _Print PLS PLS PLS
-			LDI 0x0c
+			JPS printLine ' @_________________@ ', 0
+			LDI 10
 			STA _YPos
-			LDI 0x08
+			LDI 6
 			STA _XPos
-			PHS LDI <rLtxt1 PHS LDI >rLtxt1 PHS JPS _Print PLS PLS PLS
-			LDI 0x0b
+			JPS printLine ' @_________________@ ', 0
+			LDI 9
 			STA _YPos
-			LDI 0x08
+			LDI 6
 			STA _XPos
-			PHS LDI <rLtxt2 PHS LDI >rLtxt2 PHS JPS _Print PLS PLS PLS
-			DEB _XPos DEB _XPos DEB _XPos DEB _XPos
+			JPS printLine ' @ GO TO LEVEL:    @ ', 0
+			DEB _XPos DEB _XPos DEB _XPos DEB _XPos DEB _XPos
 			LDA _XPos
 			STA tmp00
 			CLB tmp02
@@ -827,12 +882,12 @@ rL1:		JPS _WaitInput
 			LDA tmp04
 			CPI 0x00
 			BNE rL2
-			JPS _PrintChar
+			JPS printCharXY
 			PLS
 			STA tmp02
 			INB tmp04
 			JPA rL1
-rL2:		JPS _PrintChar
+rL2:		JPS printCharXY
 			PLS
 			STA tmp03
 			CLB tmp04
@@ -859,8 +914,6 @@ rLcr:		LDA tmp02
 rLcr2:		LDA tmp04
 			STA level
 			JPA nextLevel
-rLtxt1:		'-------------------', 0
-rLtxt2:		'| Go to Level:    |', 0
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 spritetmpPtr16:	; pointer for faster access to individual sprites
 			spriteData,
@@ -900,10 +953,228 @@ playerUp:		0x00,0x00, 0x40,0x10, 0xc0,0x1f, 0x80,0x0a, 0xe0,0x3f, 0xb0,0x6a, 0x5
 playerDown:		0x00,0x00, 0xc0,0x18, 0xe0,0x3d, 0xe0,0x3d, 0xc0,0x18, 0x20,0x27, 0xf0,0x7a,
 				0x50,0x55, 0xb0,0x6a, 0xe0,0x3f, 0x80,0x0a, 0xc0,0x1f, 0x40,0x10, 0x00,0x00,
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Outputs the text immediately after JPS
+; must be terminated 0
+printLine:	LDS 1
+			STA ptr1+1
+			LDS 2
+			STA ptr1+0
+			INW ptr1
+			INW ptr1
+pL1:		LDR ptr1
+			CPI 0x00
+			BNE pL2
+			DEW ptr1
+			LDA ptr1+0
+			STS 2
+			LDA ptr1+1
+			STS 1
+			RTS
+pL2:		PHS JPS printCharXY PLS
+			INW ptr1
+			JPA pL1
+ptr1:		0x00, 0x00,
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; PHS Char
+; outputs a character at the position _XPos(0..39), _YPos (0..23) grid 10x10 pixel
+; XPos and _YPos are updated, there is no scrolling
+printCharXY:	
+			CLB	xPos16+0x01
+			LDA _XPos
+			LSL
+			STA xPos16+0x00 ; xPos16 = _XPos * 2
+			PHS				; memorize _XPos * 2
+			LLW	xPos16		; xPos16 = _XPos * 4
+			LLW	xPos16		; xPos16 = _XPos * 8
+			PLS				; Restore _XPos * 2
+			ADW xPos16		; xPos16 = _XPos * 8 + _XPos * 2 = _XPos * 10
+			LDA xPos16+0x00
+			PHS				; XPos low
+			LDA xPos16+0x01
+			PHS				; XPos hight
+			LDA _YPos
+			LSL
+			STA yPos8
+			LL2
+			ADA yPos8
+			PHS				; yPos = _YPos* 10
+			LDS 6			; Char is LDS 3+3
+			PHS
+			JPS printChar
+			PLS PLS PLS PLS
+			INB _XPos
+			LDA _XPos
+			CPI 40
+			BCC pCxy1
+			CLB _XPos
+			INB _YPos
+			LDA _YPos
+			CPI 24
+			BCC pCxy1
+			CLB _YPos
+pCxy1:		RTS
+xPos16:		0x00, 0x00,
+yPos8:		0x00,
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; print char 0x20..0x5f
+; PHS: xLow, xHiht, y, char
+printChar:		LDS 4               	; Y
+                LL6 STA addr+0      	;
+                LDS 4               	; Y
+                RL7 ANI 63 ADI 0xc3 STA addr+1
+                LDS 5               	; Xhight
+                DEC 
+                LDS 6               	; Xlow
+                RL6 ANI 63 ADI 12 ORB addr+0
+                LDS 6 ANI 7 STA shift	; Xlow
+                LDI 10 STA scnt			; scnt Loop counter 8 bytes + 2
+                LDS 3					; char
+				CPI 0x60
+				BCS rPCrts				; char > 0x5f
+				SBI 0x20
+				BCC rPCrts				; char < 0x20
+				STA spritePointer+0
+				CLB spritePointer+1
+				LLW spritePointer		; *2
+				LLW spritePointer		; *4
+				LLW spritePointer		; *8
+				LDI <alphaNumSprites
+				ADW spritePointer
+				LDI >spritePointer
+				ADB spritePointer+1
+				DEW spritePointer
+clineloop:      LDA scnt
+				CPI 10
+				BEQ cl1
+				CPI 1
+				BEQ cl1
+				INW spritePointer
+				LDR spritePointer
+				JPA cl2
+cl1:			LDI 0x00
+cl2:            STA buffer+0        
+                CLB buffer+1
+                CLB buffer+2
+                CLB mask+0
+				LDI 0xfc
+				STA mask+1
+				LDI 0xff
+				STA mask+2
+                LYA shift      ; shift counter     
+				DEY                 
+                BCC cshiftdone 
+cshiftloop:  	LLW buffer+0        ; logical shift to the left word absolute address
+				RLB buffer+2        ; rotate shift left byte absolute address
+				SEC
+				RLW mask+0
+				RLB mask+2
+				DEY                 ; decrement X
+				BCS cshiftloop       ; branch on carry Set
+cshiftdone:		LDA mask+0
+				ANR addr 
+                STR addr            
+                LDA buffer+0
+				ORR addr            
+                STR addr            
+                INW addr            
+                LDA mask+1        
+				ANR addr 
+                STR addr            
+                LDA buffer+1        
+                ORR addr            
+                STR addr            
+                INW addr            
+                LDA mask+2
+				ANR addr 
+                STR addr            
+                LDA buffer+2
+                ORR addr            
+                STR addr            
+ccommon:        LDI 62              
+                ADW addr            
+                DEB scnt
+                BNE clineloop		
+rPCrts:         RTS
+_tmp:			0x00,0x00,
+scnt:           0x00,
+shift:          0xff,
+addr:           0xffff,
+;buffer:         0xff, 0xff, 0xff,
+mask:			0xff, 0xff, 0xff,
+spritePointer:	0xffff,
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+alphaNumSprites:	
+	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	; 0x20   space
+	0x38,0x38,0x38,0x38,0x20,0x20,0x00,0x30,	; 0x21   !
+	0x00,0x36,0x36,0x24,0x00,0x00,0x00,0x00,	; 0x22   "
+	0x66,0xff,0xff,0x66,0x66,0xff,0xff,0x66,	; 0x23   #
+	0x18,0x7e,0x03,0x7e,0xe0,0xe0,0x7e,0x18,	; 0x24   $
+	0xc7,0xe5,0x77,0x38,0x1c,0xee,0xa7,0xe3,	; 0x25   %
+	0x06,0x09,0x09,0x46,0x6d,0x11,0x71,0xce,	; 0x26   &
+	0x00,0x0c,0x0c,0x08,0x00,0x00,0x00,0x00,	; 0x27   '
+	0x38,0x1c,0x0e,0x0e,0x0e,0x0e,0x1c,0x38,	; 0x28   (
+	0x1c,0x38,0x70,0x70,0x70,0x70,0x38,0x1c,	; 0x29   )
+	0x99,0x5a,0x3c,0xff,0xff,0x3c,0x5a,0x99,	; 0x2a   *
+	0x18,0x18,0x18,0xff,0xff,0x18,0x18,0x18,	; 0x2b   +
+	0x00,0x00,0x00,0x00,0x0c,0x0c,0x08,0x04,	; 0x2c   ,
+	0x00,0x00,0x00,0xff,0xff,0x00,0x00,0x00,	; 0x2d   -
+	0x00,0x00,0x00,0x00,0x00,0x0c,0x0c,0x00,	; 0x2e   .
+	0xc0,0xe0,0x70,0x38,0x1c,0x0e,0x07,0x03,	; 0x2f   /
+	0xff,0xc3,0xc3,0xc3,0xf3,0xf3,0xf3,0xff,	; 0x30   0
+	0x1e,0x1e,0x18,0x18,0x18,0x18,0x7e,0x7e,	; 0x31   1
+	0xff,0xc3,0xc0,0xff,0x03,0x03,0xf3,0xff,	; 0x32   2
+	0xff,0xc3,0xc0,0xfc,0xc0,0xc0,0xc3,0xff,	; 0x33   3
+	0xcf,0xcf,0xcf,0xff,0xc0,0xc0,0xc0,0xc0,	; 0x34   4
+	0xff,0x03,0x03,0xff,0xf0,0xf0,0xf0,0xff,	; 0x35   5
+	0xff,0xc3,0x03,0xff,0xe3,0xe3,0xe3,0xff,	; 0x36   6
+	0xff,0xf0,0xf0,0xf0,0x3c,0x0c,0x0c,0x0c,	; 0x37   7
+	0xfc,0xcc,0xcc,0xff,0xc3,0xc3,0xc3,0xff,	; 0x38   8
+	0xff,0xc3,0xc3,0xff,0xf0,0xf0,0xf0,0xf0,	; 0x39   9
+	0x00,0x0c,0x0c,0x00,0x00,0x0c,0x0c,0x00,	; 0x3a   :
+	0x00,0x18,0x18,0x00,0x18,0x18,0x10,0x08,	; 0x3b   ;
+	0xc0,0xf0,0x7c,0x0f,0x0f,0x7c,0xf0,0xc0,	; 0x3c   <
+	0x00,0xff,0xff,0x00,0x00,0xff,0xff,0x00,	; 0x3d   =
+	0x03,0x0f,0x3c,0xf0,0xf0,0x3c,0x0f,0x03, 	; 0x3e   >
+	0x3c,0x62,0x70,0x38,0x18,0x18,0x00,0x18,	; 0x3f   ?
+alphaNumSprites2:	
+	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,	; 0x40   @ -> |
+	0xfc,0xcc,0xcc,0xff,0xc3,0xc3,0xf3,0xf3,	; 0x41   A
+	0x3f,0x33,0x33,0xff,0xc3,0xc3,0xc3,0xff,	; 0x42   B
+	0xff,0xc3,0x03,0x03,0x0f,0x0f,0xcf,0xff,	; 0x43   C
+	0x3f,0xc3,0xc3,0xc3,0xcf,0xcf,0xcf,0x3f,	; 0x44   D
+	0xff,0x0f,0x0f,0x3f,0x03,0x03,0x03,0xff,	; 0x45   E
+	0xff,0x0f,0x0f,0x3f,0x03,0x03,0x03,0x03,	; 0x46   F
+	0xff,0xc3,0x03,0x03,0xf3,0xf3,0xc3,0xff,	; 0x47   G
+	0xc3,0xc3,0xc3,0xff,0xcf,0xcf,0xcf,0xcf,	; 0x48   H
+	0x08,0x08,0x08,0x38,0x38,0x38,0x38,0x38,	; 0x49   I
+	0x20,0x20,0x20,0xe0,0xe0,0xe0,0xe3,0xff,	; 0x4a   J
+	0xc3,0xe3,0x73,0x3f,0xff,0xcf,0xcf,0xcf,	; 0x4b   K
+	0x03,0x03,0x03,0x0f,0x0f,0x0f,0x0f,0xff,	; 0x4c   L
+	0xc3,0xcf,0xff,0xff,0xc3,0xc3,0xc3,0xc3,	; 0x4d   M
+	0xc3,0xc3,0xcf,0xff,0xff,0xf3,0xc3,0xc3,	; 0x4e   N
+	0xff,0xf3,0xf3,0xf3,0xc3,0xc3,0xc3,0xff,	; 0x4f   O
+	0xff,0xc3,0xc3,0xff,0x0f,0x0f,0x0f,0x0f,	; 0x50   P
+	0xff,0xf3,0xf3,0xc3,0xc3,0x23,0x63,0xdf,	; 0x51   Q
+	0xff,0xc3,0xc3,0xff,0x3f,0x3f,0xcf,0xcf,	; 0x52   R
+	0xff,0xc3,0x03,0xff,0xf0,0xf0,0xf3,0xff,	; 0x53   S
+	0xff,0x0c,0x0c,0x3c,0x3c,0x3c,0x3c,0x3c,	; 0x54   T
+	0xc3,0xc3,0xc3,0xcf,0xcf,0xcf,0xcf,0xff,	; 0x55   U
+	0xcf,0xcf,0xcf,0xcf,0xcf,0xff,0x3c,0x0c,	; 0x56   V
+	0xc3,0xc3,0xc3,0xc3,0xff,0xff,0xcf,0xc3,	; 0x57   W
+	0xc3,0xc3,0xc3,0x3c,0x3c,0xc3,0xc3,0xc3,	; 0x58   X
+	0xf3,0xf3,0xf3,0xff,0x3c,0x3c,0x3c,0x3c,	; 0x59   Y
+	0xff,0x81,0x80,0xf8,0x3f,0x01,0xc1,0xff,	; 0x5a   Z
+	0x18,0x3c,0x7e,0xdb,0x99,0x18,0x18,0x18,	; 0x5b   [ up
+	0x18,0x18,0x18,0x99,0xdb,0x7e,0x3c,0x18,	; 0x5c   \ down
+	0x18,0x0c,0x06,0xff,0xff,0x06,0x0c,0x18,	; 0x5d   ] left
+	0x18,0x30,0x60,0xff,0xff,0x60,0x30,0x18,	; 0x5e   ^ right
+	0x00,0x00,0xff,0xff,0xff,0xff,0x00,0x00,	; 0x5f   _
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 level:		0x01,
 cntTargets:	0x00,
 allTargets:	0x00,
 cntMoves:	0x00,0x00,
+cntPushes:	0x00,0x00,
 backMove:	0x00,
 tmp00:		0x00,
 tmp01:		0x00,
