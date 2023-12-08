@@ -9,7 +9,7 @@ The game is a Sokoban clone. In the first version there are 90 playable levels.
 
 ![sokoban](sokoban-title.jpg)
 
-Level 10 von 90
+Level 10 of 90
 
 ![sokoban](sokoban-level-10.jpg)
 
