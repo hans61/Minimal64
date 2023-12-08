@@ -7,7 +7,11 @@ https://github.com/slu4coder/The-Minimal-64-Home-Computer
 
 The game is a Sokoban clone. In the first version there are 90 playable levels.
 
-![sokoban](m64sokoban.jpg)
+![sokoban](sokoban-title.jpg)
+
+Level 10 von 90
+
+![sokoban](sokoban-level-10.jpg)
 
 ## Controls
 
@@ -16,6 +20,7 @@ The game is a Sokoban clone. In the first version there are 90 playable levels.
 |Cursor keys|moves the player in four possible directions|
 |N          |restart current level                       |
 |G          |starts a level 1..90                        |
-|- or PgUp  |back one level                              |
-|+ or PgDn  |one level forward                           |
+|- or PgDn  |back one level                              |
+|+ or PgUp  |one level forward                           |
 |R          |undo last move                              |
+
