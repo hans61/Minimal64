@@ -22,7 +22,7 @@ Level 10 of 90
 |G          |starts a level 1..90                        |
 |- or PgDn  |back one level                              |
 |+ or PgUp  |one level forward                           |
-|R          |undo last move                              |
+|R          |Undo last 15 moves                          |
 
 
 I played Sokoban at the end of the 1980s on the XT PC with CGA graphics. You can still find it on YouTube today.
