@@ -9,9 +9,9 @@ The game is a Atomix clone. In the first version there are 15 playable levels.
 
 ![atomix](atomix-minimal64-start.jpg)
 
-Level 14 of 15
+Level 25 of 25 (21 no bonus levels)
 
-![atomix](atomix-minimal64-level-14.jpg)
+![atomix](atomix-minimal64-level-25.jpg)
 
 ## Controls
 
