@@ -24,7 +24,7 @@ Level 25 of 25 (21 no bonus levels)
 |+ or PgUp   |one level forward         |
 
 
-Atomix ist ein Spiel aus dem Jahr 1990, das neben einem DOS-PC auch auf anderen Systemen verfügbar war.
+Atomix is a game from 1990 that was also available on other systems in addition to a DOS PC.
 
 https://en.wikipedia.org/wiki/Atomix_(video_game)
 
