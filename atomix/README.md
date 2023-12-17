@@ -5,7 +5,7 @@ You can find everything about the Minimal 64 here:
 
 https://github.com/slu4coder/The-Minimal-64-Home-Computer
 
-The game is a Atomix clone. In the first version there are 15 playable levels.
+The game is an Atomix clone. There are currently 26 playable levels. The first 25 levels are the original levels without the bonus levels. More levels will follow.
 
 ![atomix](atomix-minimal64-start.jpg)
 
