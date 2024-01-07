@@ -251,7 +251,7 @@ pMB4:		JPS printPlayer			; delete player sprite
 			CPI 0x00
 			BEQ noMB				; there is no need to move a box
 			JPS incPushes
-			LDA	xPosPlayer STZ <rY	; LYA yPosPlayer			; box must be moved to the old player position
+			LDA	yPosPlayer STZ <rY	; LYA yPosPlayer			; box must be moved to the old player position
 			LDA xPosPlayer STZ <rX
 			JPS calcMapPtr
 			LDR tmpPtr
