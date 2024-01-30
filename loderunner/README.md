@@ -30,3 +30,7 @@ to do:
 | y          | digging left             |
 | x          | digging right            |
 |            |                          |
+
+## Picture
+
+![Lode Runner](loderunner.jpg)
