@@ -2164,7 +2164,7 @@ ueWalkLeft:
 			JPA ueSetWalkingLeftFrameB
 
 ueSetWalkingLeftFrameA:
-			LDI 0x223
+			LDI 0x23
 ueSetWalkingLeftFrameB:
 										;sec
 			SBI 0x23					;sbc #$29
