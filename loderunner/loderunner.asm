@@ -2726,7 +2726,7 @@ calcVRAM:	CLB tmp01
 			LLW tmp00		; *64
 			LDI 0x0c
 			ADW tmp00
-			LDI 0xc3
+			LDI >ViewPort
 			ADB tmp01
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2835,7 +2835,7 @@ plotSprite14x14: ;pha
 			LDA ypos8			; Lade A vom Stack Offset 3
 			RL7					; Rotate Shift Left 7 (RL7 1 0C765432)
 			ANI 63				; Bitwise AND (3F)
-			ADI 0xc3			; Add       (0b11000011) ADD A=A+C3
+			ADI >ViewPort		; Add       (0b11000011) ADD A=A+C3
 			STA vAddr+1			; Store A to high Byte Y
 			; X Postion 0..399
 			LDA xpos16+1		; Lade A vom Stack Offset 4 Xhigh -> beeinflusst C nicht
@@ -3013,7 +3013,7 @@ pCxy1:		RTS
 printChar:		LDS 4               	; Y
                 LL6 STA vAddr+0      	;
                 LDS 4               	; Y
-                RL7 ANI 63 ADI 0xc3 STA vAddr+1
+                RL7 ANI 63 ADI >ViewPort STA vAddr+1
                 LDS 5               	; Xhight
                 DEC
                 LDS 6               	; Xlow
@@ -5886,6 +5886,8 @@ endOfData:									; maximum available memory up to 0xafff
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #mute
 #org 0x0064 _lastLevel:						; &64 = 100
+
+#org 0xc30c ViewPort:
 
 #org 0x0000 _enemyXBlockPos:
 #org 0x0001 _enemyYBlockPos:
