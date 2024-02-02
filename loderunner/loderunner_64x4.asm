@@ -2652,7 +2652,7 @@ drawStrongLine:
             STB tmp02         ; Linie 2 low Byte
             LDI 0xcc
             STB tmp04         ; Linie 3 low Byte
-            LDI 0xfb
+			LDI >ViewPort+0x3800
             STB tmp01         ; Linie 1 high Byte
             STB tmp03         ; Linie 2 high Byte
             STB tmp05         ; Linie 3 high Byte
