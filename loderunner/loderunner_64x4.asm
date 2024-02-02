@@ -3,20 +3,16 @@
 
 #org 0x1000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Start Game ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-begin:      LDI 0xfe STB 0xffff ; SP initialisieren
-                              ;JPA startGame
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-startGame:
-            JPS _Clear
-            LDI 0x05          ; A = 5
-            STB lives         ; (lives) = A
-            LDI 0x01          ;yes, start level 1 (quick play)
+begin:      MIB 0xfe,0xffff		; SP initialisieren
+startGame:	JPS _Clear
+            LDI 0x05			; A = 5
+            STB lives			; (lives) = A
+            LDI 0x01			;yes, start level 1 (quick play)
             STB level
-                              ;JPA gameLoop
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gameLoop:    JPS initVariables
+gameLoop:	JPS initVariables
             JPS drawLevel
-checkKeys:    JPS KeyHandler
+checkKeys:	JPS KeyHandler
             JPS delayLong
             LDB gameRun
             CPI 0x00
@@ -27,7 +23,7 @@ checkKeys:    JPS KeyHandler
             CPI 0x00
             BNE deathSound
             JPA checkEscapeKey
-checkKey1:    LDB oldPlayerXPosLo
+checkKey1:	LDB oldPlayerXPosLo
             STB tmpXPosLo
             LDB oldPlayerXPosHi
             STB tmpXPosHi
@@ -38,7 +34,7 @@ checkKey1:    LDB oldPlayerXPosLo
             CPI 0x09
             BCC checkKey2
             LDI 0x07
-checkKey2:    STB playerFrameNumber
+checkKey2:	STB playerFrameNumber
             JPS delayLong
             JPA redrawPlayer
 deathSound:
