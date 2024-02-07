@@ -1,28 +1,30 @@
+#org 0xc30c ViewPort:
+
 #org 0x2000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Start Game ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 begin:		LDI 0xfe STA 0xffff ; SP initialize
 startGame:  LDI 0x01
 			STA level
 			LDI 0x0c
-			STA dst+0
-			LDI 0xc3
-			STA dst+1
+			STA dst1+0
+			LDI >ViewPort
+			STA dst1+1
             LDI <pic
-			STA src+0
+			STA src1+0
 			LDI >pic
-			STA src+1
+			STA src1+1
             LYI 240
 yloop:      LXI 50
 xloop:      LDA
-src:        0xffff 
+src1:		0xffff 
 			STA
-dst:        0xffff
-			INW src
-			INW dst
+dst1:		0xffff
+			INW src1
+			INW dst1
 			DEX
 			BGT xloop
 			LDI 14
-			ADW dst
+			ADW dst1
 			DEY
 			BGT yloop
             JPS _WaitInput
@@ -123,11 +125,11 @@ movePlayer:	JPS incMoves
 			LDI 0x0f				; Write pointer values 0..15
 			ANB backMoveRdWr
 			CPA backMoveEnd
-			BNE mP1
+			BNE moveP1
 			INB backMoveEnd			; Ring buffer is full, move end pointer
 			LDI 0x0f
 			ANB backMoveEnd
-mP1:		LDA xPosPlayer			; 0..17
+moveP1:		LDA xPosPlayer			; 0..17
 			ADA dX
 			STA xPosPlayer
 			TAX
@@ -202,15 +204,15 @@ levelDone:
 incLevel:	LDA level
 			INC
 			CPI 91					; max level 90
-			BCC lD1
+			BCC levelD1
 			LDI 1					; first level
-lD1:		STA level
+levelD1:	STA level
 			JPA nextLevel
 decLevel:	LDA level
 			DEC
-			BNE lD1
+			BNE levelD1
 			LDI 90					; last level
-			JPA lD1
+			JPA levelD1
 
 playerMoveBack:
 			LDA backMoveEnd
@@ -229,39 +231,39 @@ playerMoveBack:
 			LDR backMovePtr
 			ANI 0x03				; two bit mask for direction of movement
 			CPI 1
-			BNE pMB1
+			BNE playerMB1
 			LDI 0xff				; down
 			STA dY
-			JPA pMB4
-pMB1:		CPI 2
-			BNE pMB2
+			JPA playerMB4
+playerMB1:	CPI 2
+			BNE playerMB2
 			LDI 0x01				; left
 			STA dX
-			JPA pMB4
-pMB2:		CPI 3
-			BNE pMB3
+			JPA playerMB4
+playerMB2:	CPI 3
+			BNE playerMB3
 			LDI 0x01				; up
 			STA dY
-			JPA pMB4
-pMB3:		LDI 0xff				; right
+			JPA playerMB4
+playerMB3:	LDI 0xff				; right
 			STA dX
-pMB4:		JPS printPlayer			; delete player sprite
+playerMB4:	JPS printPlayer			; delete player sprite
 			LDR backMovePtr			; undo data
 			ANI 0x80
 			CPI 0x00
-			BEQ noMB				; there is no need to move a box
+			BEQ noMBack				; there is no need to move a box
 			JPS incPushes
 			LYA yPosPlayer			; box must be moved to the old player position
 			LXA xPosPlayer
 			JPS calcMapPtr
 			LDR tmpPtr
 			CPI <_target			; is this a target
-			BNE pMB5				; field is not a target so only box
+			BNE playerMB5			; field is not a target so only box
 			INB cntTargets			; new position is a target
 			LDI <_boxtarget			; field was target now box in target
-			JPA pMB6
-pMB5:		LDI <_box				; box
-pMB6:		STR tmpPtr
+			JPA playerMB6
+playerMB5:	LDI <_box				; box
+playerMB6:	STR tmpPtr
 			LDA xPosPlayer
 			STA xPos
 			LDA yPosPlayer
@@ -281,13 +283,13 @@ pMB6:		STR tmpPtr
 			JPS calcMapPtr
 			LDR tmpPtr
 			CPI <_boxtarget			; was the box previously on a target
-			BNE pMB7
+			BNE playerMB7
 			DEB cntTargets
 			LDI <_target
-			JPA pMB8
-pMB7:		LDI <_space
-pMB8:		STR tmpPtr
-noMB:		LDA xPosPlayer			; 0..20
+			JPA playerMB8
+playerMB7:	LDI <_space
+playerMB8:	STR tmpPtr
+noMBack:	LDA xPosPlayer			; 0..20
 			ADA dX
 			STA xPosPlayer
 			LDA yPosPlayer			; 0..16
@@ -403,24 +405,24 @@ sum2:		0x00,
 setPlayerSptite:
 			LDA dY
 			CPI 0xff
-			BNE sPS1
+			BNE setPS1
 			; down
 			LDI 0x07
-			JPA sPS4
-sPS1:		CPI 0x01
-			BNE sPS2
+			JPA setPS4
+setPS1:		CPI 0x01
+			BNE setPS2
 			; up
 			LDI 0x08
-			JPA sPS4
-sPS2:		LDA dX
+			JPA setPS4
+setPS2:		LDA dX
 			CPI 0x01
-			BNE sPS3
+			BNE setPS3
 			; right
 			LDI 0x05
-			JPA sPS4
-sPS3:		; left
+			JPA setPS4
+setPS3:		; left
 			LDI 0x06
-sPS4:		STA playerSptite
+setPS4:		STA playerSptite
 			TXA
 			RTS
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -432,12 +434,12 @@ calcMapPtr:
 			LDI	>tileMap
 			STA tmpPtr+0x01
 			INY
-cMP1:		DEY
-			BEQ cMP2
+calcMP1:	DEY
+			BEQ calcMP2
 			LDI 21
 			ADW tmpPtr
-			JPA cMP1
-cMP2:		TXA
+			JPA calcMP1
+calcMP2:	TXA
 			ADW tmpPtr					; tmpPtr player address in map
 			RTS
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -558,7 +560,7 @@ calcScreenAddr:
 			TYA		            ; Lade A vom Stack Offset 3
 			RL7                 ; Rotate Shift Left 7 (RL7 1 0C765432)
 			ANI 63              ; Bitwise AND (3F)
-			ADI 0xc3            ; Add       (0b11000011) ADD A=A+C3
+			ADI >ViewPort       ; Add       (0b11000011) ADD A=A+C3
 			STA vAdr+1          ; Store A to high Byte Y
 			; X postion 0..399
 			LDA posX16+1		; Load A from stack Offset 4 Xhigh -> does not affect C
@@ -631,17 +633,17 @@ buildTileMap:
 			CLW cntMoves
 			CLW cntPushes
 			LXI 0x00
-bcTM1:		LDI 0x00
+buildTM1:	LDI 0x00
 			STR tmpPtr
 			INW tmpPtr
 			DEX
-			BNE bcTM1
+			BNE buildTM1
 			LXI 0x65
-bcTM2:		LDI 0x00
+buildTM2:	LDI 0x00
 			STR tmpPtr
 			INW tmpPtr
 			DEX
-			BNE bcTM2
+			BNE buildTM2
 ; Complete with map fill 0x00
 			LDI	<tileMap		; tmpPtr Pointer to current level data (nibble)
 			STA tmpPtr+0x00
@@ -656,15 +658,15 @@ bcTM2:		LDI 0x00
 			STA dataPtr+0x01	; dataPtr Pointer to the destination of the byte-oriented data
 			LDA level
 			CPI 91				; max level 90
-			BMI bTM0
+			BMI buildTM3
 			LDI 1
 			STA level
-bTM0:		LXA	level			; X = (level) level number
-bTM1:		DEX					; Calculate pointers to level data
+buildTM3:	LXA	level			; X = (level) level number
+buildTM4:	DEX					; Calculate pointers to level data
 			BEQ bTMdataLoop
 			LDI 105				; to the next level
 			ADW dataPtr
-			JPA bTM1
+			JPA buildTM4
 			
 bTMdataLoop:
 			LDR dataPtr			; Pointer to level data -> load Header
@@ -683,69 +685,69 @@ bTMdataLoop:
 			INW dataPtr			; Skip level number
 			
 			LXI 1				; X=1
-bTN3:		DEX					; DEC X = Zähler auf 4 bit-Gruppen im Byte
-			BNE bTN4
+buildTN3:	DEX					; DEC X = Zähler auf 4 bit-Gruppen im Byte
+			BNE buildTN4
 			LDR dataPtr			; next byte of compressed data
 			STA dataByte
 			INW dataPtr
 			DEB bytesCounter
 			BEQ bTNrts
 			LXI 4
-bTN4:		LDI 3
+buildTN4:	LDI 3
 			ANA dataByte
 			PHS
 			LRB dataByte
 			LRB dataByte
 			PLS
 			CPI 0x00
-			BEQ bTN3
+			BEQ buildTN3
 			CPI 0x01
-			BNE bTN5
+			BNE buildTN5
 			LDI <_space
 			JPA bTMstore
-bTN5:		CPI 0x02
-			BNE bTN6
+buildTN5:	CPI 0x02
+			BNE buildTN6
 			LDI <_brick
 			JPA bTMstore
-bTN6:		DEX
-			BNE bTN7
+buildTN6:	DEX
+			BNE buildTN7
 			LDR dataPtr
 			STA dataByte
 			INW dataPtr
 			DEB bytesCounter
 			BEQ bTNrts
 			LXI 4				; number of bit pairs per byte
-bTN7:		LDI 3				; mask two bit
+buildTN7:	LDI 3				; mask two bit
 			ANA dataByte
 			PHS
 			LRB dataByte
 			LRB dataByte
 			PLS
 			CPI 0x00
-			BNE bTN8
+			BNE buildTN8
 			INB allTargets
 			LDI <_box
 			JPA bTMstore
-bTN8:		CPI 0x01
-			BNE bTN9
+buildTN8:	CPI 0x01
+			BNE buildTN9
 			LDI <_target
 			JPA bTMstore
-bTN9:		CPI 0x02
-			BNE bTN10
+buildTN9:	CPI 0x02
+			BNE buildTN10
 			INB allTargets
 			LDI <_boxtarget
 bTMstore:		
 			STR tmpPtr
 			INW tmpPtr
-			JPA bTN3
-bTN10:		; End of the line to the beginning of the next	
+			JPA buildTN3
+buildTN10:	; End of the line to the beginning of the next	
 			LDI 21				; map pointer to the beginning of the next line
 			ADW tmp00
 			LDA tmp00
 			STA tmpPtr+0x00
 			LDA tmp01
 			STA tmpPtr+0x01
-			JPA bTN3
+			JPA buildTN3
 bTNrts:		RTS
 dataPtr:	0xffff,
 dataByte:	0x00,
@@ -823,7 +825,7 @@ printMoves:
 			LDI 36
 			STA _XPos
 			LXI 0x01
-pM1:
+printM1:
 			LTX cntMoves
 			PHS
 			RL5
@@ -835,7 +837,7 @@ pM1:
 			ADI 0x30
 			PHS JPS printCharXY PLS
 			DEX
-			BPL pM1
+			BPL printM1
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; print number of moves
@@ -845,7 +847,7 @@ printPushes:
 			LDI 36
 			STA _XPos
 			LXI 0x01
-pP1:
+printP1:
 			LTX cntPushes
 			PHS
 			RL5
@@ -857,7 +859,7 @@ pP1:
 			ADI 0x30
 			PHS JPS printCharXY PLS
 			DEX
-			BPL pP1
+			BPL printP1
 			RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; enter a level number and save in level
@@ -883,30 +885,30 @@ readLevel:
 			CLB tmp02
 			CLB tmp03
 			CLB tmp04
-rL1:		JPS _WaitInput
+readL1:		JPS _WaitInput
 			CPI 0x0a			; CR
-			BEQ rLcr
+			BEQ readLcr
 			CPI 0x30
-			BCC rL1
+			BCC readL1
 			CPI 0x3a
-			BCS rL1
+			BCS readL1
 			PHS
 			LDA tmp04
 			CPI 0x00
-			BNE rL2
+			BNE readL2
 			JPS printCharXY
 			PLS
 			STA tmp02
 			INB tmp04
-			JPA rL1
-rL2:		JPS printCharXY
+			JPA readL1
+readL2:		JPS printCharXY
 			PLS
 			STA tmp03
 			CLB tmp04
 			LDA tmp00
 			STA _XPos
-			JPA rL1
-rLcr:		LDA tmp02
+			JPA readL1
+readLcr:	LDA tmp02
 			SBI 0x30
 			CPI 0x0a
 			BCS nextLevel
@@ -914,7 +916,7 @@ rLcr:		LDA tmp02
 			LDA tmp03
 			SBI 0x30
 			CPI 0x0a
-			BCS rLcr2
+			BCS readLcr2
 			PHS
 			LDA tmp04
 			LSL
@@ -923,7 +925,7 @@ rLcr:		LDA tmp02
 			ADB tmp04
 			PLS
 			ADB tmp04
-rLcr2:		LDA tmp04
+readLcr2:	LDA tmp04
 			STA level
 			JPA nextLevel
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -973,18 +975,18 @@ printLine:	LDS 1
 			STA ptr1+0
 			INW ptr1
 			INW ptr1
-pL1:		LDR ptr1
+printL1:	LDR ptr1
 			CPI 0x00
-			BNE pL2
+			BNE printL2
 			DEW ptr1
 			LDA ptr1+0
 			STS 2
 			LDA ptr1+1
 			STS 1
 			RTS
-pL2:		PHS JPS printCharXY PLS
+printL2:	PHS JPS printCharXY PLS
 			INW ptr1
-			JPA pL1
+			JPA printL1
 ptr1:		0x00, 0x00,
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; PHS Char
@@ -1033,7 +1035,7 @@ yPos8:		0x00,
 printChar:		LDS 4               	; Y
                 LL6 STA addr+0      	;
                 LDS 4               	; Y
-                RL7 ANI 63 ADI 0xc3 STA addr+1
+                RL7 ANI 63 ADI >ViewPort STA addr+1
                 LDS 5               	; Xhight
                 DEC 
                 LDS 6               	; Xlow
@@ -1057,14 +1059,14 @@ printChar:		LDS 4               	; Y
 				DEW spritePointer
 clineloop:      LDA scnt
 				CPI 10
-				BEQ cl1
+				BEQ clinel1
 				CPI 1
-				BEQ cl1
+				BEQ clinel1
 				INW spritePointer
 				LDR spritePointer
-				JPA cl2
-cl1:			LDI 0x00
-cl2:            STA buffer+0        
+				JPA clinel2
+clinel1:		LDI 0x00
+clinel2:		STA buffer+0        
                 CLB buffer+1
                 CLB buffer+2
                 CLB mask+0

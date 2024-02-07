@@ -1,9 +1,12 @@
+#org 0x0010 delayValue:				; to adjust the atom move speed
+#org 0xc30c ViewPort:
+
 #org 0x2000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Start Game ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 begin:		LDI 0xfe STA 0xffff ; SP initialisieren
 startGame:  LDI 0x0c		; Start Load image
 			STA dst+0
-			LDI 0xc3
+			LDI >ViewPort
 			STA dst+1
             LDI <pic
 			STA src+0
@@ -30,7 +33,7 @@ dst:        0xffff
 nextLevel:	JPS _Clear		; Logo sign
 			LDI 0x0c
 			STA ldst+0
-			LDI 0xc3
+			LDI >ViewPort
 			STA ldst+1
             LDI <logo
 			STA lsrc+0
@@ -85,19 +88,19 @@ loopPrintMap:
 			LDI 42
 			ADW mapPtr
 			LYI 11
-lPM1:		LDR mapPtr
+loopPM1:	LDR mapPtr
 			CPI 1
-			BEQ lPM2
+			BEQ loopPM2
 			INW mapPtr
 			INY
-			JPA lPM1
-lPM2:		LDR mapPtr
+			JPA loopPM1
+loopPM2:	LDR mapPtr
 			CPI 0
-			BEQ lPM3
+			BEQ loopPM3
 			INW mapPtr
 			INY
-			JPA lPM2
-lPM3:		TYA
+			JPA loopPM2
+loopPM3:	TYA
 			STA cursorX
 			LDI <_cursor
 			STA cursorId
@@ -170,7 +173,7 @@ key_left:	LDI 0xff
 checkMove:	
 			LDA dX
 			CPI 0x00
-			BEQ noX			; No change in the X-direction
+			BEQ noXchange			; No change in the X-direction
 			; X-direction has changed
 			LDA dX
 			ADB cursorX
@@ -184,7 +187,7 @@ borderX:
 			SBB cursorX
 			JPA gameLoop
 			
-noX:		LDA dY
+noXchange:	LDA dY
 			ADB cursorY
 			LDA cursorY
 			CPI 14
@@ -265,39 +268,39 @@ mLoop:		LDA posXold+0			; Delete old position
 
 			LDA dX
 			CPI 0x00
-			BEQ mLY
+			BEQ mLoopY
 			CPI 0x01
-			BEQ mLX1				; go X++
+			BEQ mLoopX1				; go X++
 			DEW posX				; X--
 			DEW posX
 			DEW posXold
 			DEW posXold
-			JPA mL1
-mLX1:		INW posX
+			JPA mLoop1
+mLoopX1:	INW posX
 			INW posX
 			INW posXold
 			INW posXold
-			JPA mL1
-mLY:		LDA dY
+			JPA mLoop1
+mLoopY:		LDA dY
 			CPI 0x00
-			BEQ mL1
+			BEQ mLoop1
 			CPI 0x01
-			BEQ mLY1
+			BEQ mLoopY1
 			DEB posY
 			DEB posY
 			DEB posYold
 			DEB posYold
-			JPA mL1
-mLY1:		INB posY
+			JPA mLoop1
+mLoopY1:	INB posY
 			INB posY
 			INB posYold
 			INB posYold
-mL1:		JPS plotSprite16x16	
+mLoop1:		JPS plotSprite16x16	
 			LDA cursorId
 			STA spriteId
 			JPS plotSprite16x16
 
-			LYI 0x10
+			LYI <delayValue
 delay1:		LXI 0x00
 delay2:		DEX
 			BNE delay2
@@ -358,7 +361,7 @@ chkGaOvFin:	LDA level
 			STA _YPos
 			JPS printLine
 			'FINISH LEVEL', 0
-m1:			LDI 0
+chkGaOv5:	LDI 0
 			STA _XPos
 			LDI 6
 			STA _YPos
@@ -369,19 +372,19 @@ m1:			LDI 0
 			JPA nextLevel
 incLevel:	LDA level
 			CPI <_maxLevel
-			BEQ iL1
+			BEQ incL1
 			INB level
 			JPA nextLevel
-iL1:		LDI 1
-iL2:		STA level
+incL1:		LDI 1
+incL2:		STA level
 			JPA nextLevel
 decLevel:	LDA level
 			CPI 1
-			BEQ dL1
+			BEQ decL1
 			DEB level
 			JPA nextLevel
-dL1:		LDI <_maxLevel
-			JPA iL2
+decL1:		LDI <_maxLevel
+			JPA incL2
 theEnd:		LDI 0
 			STA _XPos
 			LDI 4
@@ -395,7 +398,7 @@ theEnd:		LDI 0
 			JPS printLine
 			'GO TO LEVEL 1', 0
 			CLB level
-			JPA m1
+			JPA chkGaOv5
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 loadLevel:	LDI <levels
 			STA vaddr+0
@@ -418,50 +421,50 @@ loadLevel:	LDI <levels
 			STA arrayPtr+1
 			LDI 26
 			STA loopCnt
-lL1:		LYI 7
+loadL1:		LYI 7
 			LDR vaddr
 			STA dX			; temporarily misused for storage
-lL2:		LLB dX
-			BCS lL3
+loadL2:		LLB dX
+			BCS loadL3
 			LDI 0x00
-			JPA lL4
-lL3:		LDI 0x01
-lL4:		STR arrayPtr
+			JPA loadL4
+loadL3:		LDI 0x01
+loadL4:		STR arrayPtr
 			INW arrayPtr
 			DEY
-			BNE lL2
+			BNE loadL2
 			INW vaddr
 			DEB loopCnt
-			BNE lL1
+			BNE loadL1
 			; Map finished, still insert atoms
-lL5:		LDR vaddr
+loadL5:		LDR vaddr
 			CPI 0x00		; kein Atom mehr einzufügen
-			BEQ lL6
+			BEQ loadL6
 			PHS				; Atom-ID speichern
 			INW vaddr		; Get X coordinate
 			LDR vaddr
 			ADI 11
 			STA X8
-			INW vaddr		; Get Y coordinate
+			INW vaddr			; Get Y coordinate
 			LDR vaddr
 			STA Y8
 			INW vaddr
 			JPS calcArrayIdx	; Calculate address in map
 			PLS					; Get atom
 			STR arrayPtr
-			JPA lL5
-lL6:		LDI <chkList	; Molecular data
+			JPA loadL5
+loadL6:		LDI <chkList		; Molecular data
 			STA arrayPtr+0
 			LDI >chkList
 			STA arrayPtr+1
-lL7:		INW vaddr
+loadL7:		INW vaddr
 			LDR vaddr
 			STR arrayPtr
 			CPI 0x00
-			BEQ lL8
+			BEQ loadL8
 			INW arrayPtr
-			JPA lL7
-lL8:		INW vaddr
+			JPA loadL7
+loadL8:		INW vaddr
 			LDR vaddr
 			STA levelNr
 			INW vaddr
@@ -506,11 +509,11 @@ vertical:	CLB _XPos
 			STA _YPos
 pMolTxT:	LDR levelTxtPtr
 			CPI 0x00
-			BEQ pMol1
+			BEQ printpMol1
 			PHS JPS printCharXY PLS
 			INW levelTxtPtr
 			JPA pMolTxT
-pMol1:		CLB _XPos
+printpMol1:	CLB _XPos
 			CLB _YPos
 			LDI <chkList
 			STA arrayPtr+0
@@ -523,7 +526,7 @@ pMol1:		CLB _XPos
 			LDR arrayPtr		; Atom
 			CPI 0x00			; Is there still an atom?
 			BEQ return			; no
-pR1:		STA spriteId		; Atom Sprite
+printR1:	STA spriteId		; Atom Sprite
 			JPS calcXY
 			JPS plotSprite16x16	; Draw atom
 			INW arrayPtr
@@ -531,17 +534,17 @@ pR1:		STA spriteId		; Atom Sprite
 			CPI 0x00
 			BEQ return
 			CPI 7				; Limit value for a line change
-			BMI pR2
+			BMI printR2
 			SBI 14
 			PHS
 			INB Y8
 			PLS
-pR2:		ADB X8
+printR2:	ADB X8
 			INW arrayPtr
 			LDR arrayPtr
 			CPI 0x00
 			BEQ return
-			JPA pR1
+			JPA printR1
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;
 calcArrayIdxCur:			
@@ -575,18 +578,18 @@ printLine:	LDS 1
 			STA ptr1+0
 			INW ptr1
 			INW ptr1
-pL1:		LDR ptr1
+printL1:	LDR ptr1
 			CPI 0x00
-			BNE pL2
+			BNE printL2
 			DEW ptr1
 			LDA ptr1+0
 			STS 2
 			LDA ptr1+1
 			STS 1
 			RTS
-pL2:		PHS JPS printCharXY PLS
+printL2:	PHS JPS printCharXY PLS
 			INW ptr1
-			JPA pL1
+			JPA printL1
 ptr1:		0x00, 0x00,
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; PHS Char
@@ -635,7 +638,7 @@ yPos8:		0x00,
 printChar:		LDS 4               	; Y
                 LL6 STA addr+0      	;
                 LDS 4               	; Y
-                RL7 ANI 63 ADI 0xc3 STA addr+1
+                RL7 ANI 63 ADI >ViewPort STA addr+1
                 LDS 5               	; Xhight
                 DEC 
                 LDS 6               	; Xlow
@@ -659,14 +662,14 @@ printChar:		LDS 4               	; Y
 				DEW spritePointer
 clineloop:      LDA scnt
 				CPI 10
-				BEQ cl1
+				BEQ printcl1
 				CPI 1
-				BEQ cl1
+				BEQ printcl1
 				INW spritePointer
 				LDR spritePointer
-				JPA cl2
-cl1:			LDI 0x00
-cl2:            STA buffer+0        
+				JPA printcl2
+printcl1:		LDI 0x00
+printcl2:		STA buffer+0        
                 CLB buffer+1
                 CLB buffer+2
                 CLB mask+0
@@ -740,7 +743,7 @@ plotSprite16x16:
 			LDA posY            ; Lade A vom Stack Offset 3
 			RL7                 ; Rotate Shift Left 7 (RL7 1 0C765432)
 			ANI 63              ; Bitwise AND (3F)
-			ADI 0xc3            ; Add       (0b11000011) ADD A=A+C3
+			ADI >ViewPort       ; Add       (0b11000011) ADD A=A+C3
 			STA vaddr+1         ; Store A to high Byte Y
 			; X Postion 0..399
 			LDA posX+1          ; Lade A vom Stack Offset 4 Xhigh -> beeinflusst C nicht
