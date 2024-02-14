@@ -1,7 +1,6 @@
 #org 0x0040 delayValue:				; to adjust the game speed (Minimal 64 40, Minimal 64x4 50)
 #org 0x0096 _lastLevel:				; &96 = 150 this must correspond to the loderunner.dat file
 #org 0xc30c ViewPort:
-
 #org 0x2000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Start Game ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 begin:		LDI 0xfe STA 0xffff ; SP initialisieren
@@ -21,11 +20,10 @@ startGame:
 			JPS _Clear
 			LDI 0x05				; A = 5
 			STA lives				; (lives) = A
-			LDI 1					;yes, start level 1 (quick play)
+			LDI 1 					;yes, start level 1 (quick play)
 			STA level
 			CLW score+0 CLW score+2
 			JPS initFlashLevel
-
 gameLoop:	JPS initVariables
 			JPS drawLevel
 checkKeys:	JPS KeyHandler
@@ -85,7 +83,6 @@ gameOver1:	JPS printHighscore
 			JPS clearScreen
 			JPA startGame
 			JPA gameLoop
-
 checkEscapeKey:
 			LDA _escape
 			CPI 1
@@ -171,7 +168,6 @@ checkPlaySoundAllGold:
 			LDI 0x00
 			STA playingSoundAllGold
 			STA soundIndexAllGold
-
 checkHoleDigging:
 			LDA oldPlayerXPosLo
 			STA tmpXPosLo
@@ -220,14 +216,12 @@ doneDigging:
 			BEQ playerFacingLeft                ;player facing left
 			LDI 0x07                            ;first sprite frame of player facing right
 			JPA setPlayerSpriteFrame            ;jump always
-
 playerFacingLeft:
 			LDI 0x0a                            ;first sprite frame of player facing left
 setPlayerSpriteFrame:
 			STA playerFrameNumber
 			JPS addNewHole
 			JPA redrawPlayer
-
 checkPlayerFalling:
 			LDA playerFalling
 			CPI 0x00
@@ -281,7 +275,6 @@ playerStopFalling:
 			CLB playerFalling                   ;found solid ground, so stop falling
 preRedrawPlayer2:
 			JPA redrawPlayer
-
 checkWhichKeysPressed:
 			LDA pressed
 			CPI 0x00
@@ -404,9 +397,7 @@ grInspectTileBelowNewPos:
 			JPA redrawPlayer                    ;done when there is a solid floor below the player
 grNoSolidFloor:
 			JPA checkIfPlayerShouldBeFalling
-
 checkKeyLeft:
-
 			LDA _left
 			CPI 1
 			BNE checkKeyDown
@@ -536,7 +527,6 @@ movePlayerDown:
             CPI 0x03                            ;ladder
 			BNE gdInspectTileBelowPlayer
 ; are we moving down on a ladder but standing on a solid floor?
-
 			LDA playerXBlockPos
             ADI 0x39
 			PHS JPS loadPlayerMapPtr PLS        ;inspect tile directly below the player
@@ -549,7 +539,6 @@ movePlayerDown:
 			JPA gdUpdatePos                     ;not standing on a solid floor so update the player position on the ladder
 gdPreRedrawPlayer:
 			JPA redrawPlayer					;cannot move further down so just redraw player
-
 gdInspectTileBelowPlayer:
 			LDA playerXBlockPos					;want to move down but not on a ladder
             ADI 0x39
@@ -567,7 +556,6 @@ gdInspectTileBelowPlayer:
             CPI 0x03                            ;ladder
 			BEQ gdUpdatePos                     ;when moving to another ladder block then just update player pos
 			JPA redrawPlayer                    ;in all other cases cannot move down so just redraw player
-
 gdPreCheckIfFalling:
 			JPA checkIfPlayerShouldBeFalling
 gdUpdatePos:
@@ -617,7 +605,6 @@ guPossiblyBlocked:
             CPI 0x00
 			BNE guNotBlocked                    ;not vertically aligned to block so still some pixel room above player
 			JPA redrawPlayer                    ;solid object directly above player so blocked, cannot move up
-
 guNotBlocked:
 			LDA playerXBlockPos
             ADI 0x1d							; ADI 0x01+0x1c
@@ -628,7 +615,6 @@ guNotBlocked:
             CPI 0x00
 			BNE guPossiblyLadderBelow           ;we could still be on a ladder tile (player can overlap 2 blocks)
 			JPA redrawPlayer                    ;definitely not on a ladder, cannot move up, just redraw player
-
 guPossiblyLadderBelow:
 			LDA playerXBlockPos
             ADI 0x39							; ADI 0x01+0x1c+0x1c
@@ -636,7 +622,6 @@ guPossiblyLadderBelow:
             CPI 0x03                            ;ladder
 			BEQ guOnLadder                      ;yes, we're on a ladder after all
 			JPA redrawPlayer                    ;definitely not on a ladder, cannot move up, just redraw player
-
 guOnLadder:
 			LDA playerYBlockPos
             CPI 0x00
@@ -708,7 +693,6 @@ checkHole:
 			STA holeAnimFrame
 			LDI 0x1d                            ;first anim frame of hole filling up (to draw)
 			JPA drawHole
-
 holeCheckSecondMarker:
 			CPI 0x10							;reached marker for second update to hole? &0a=10
 			BNE holeCheckThirdMarker
@@ -749,9 +733,7 @@ drawHole:	PHS
 nextHole:	DEB holeIndex
 			BMI holesDone
 			JPA checkHole                       ;loop all over holes
-
 holesDone:	RTS
-
 checkKeyDig:
 			LDA _digLeft
 			CPI 1
@@ -774,7 +756,6 @@ tryDigging:
 			BEQ preRedrawPlayer
 			LDI 0x1e                            ;ldy #$1e	;player is facing right, so first inspect tile directly to the right of player (not floor tile!)
 			JPA digInspectTile                  ;jump always
-
 digPlayerFacingLeft:
 			LDA playerXBlockPos
 			CPI 0x00
@@ -827,7 +808,6 @@ digSetPlayerFrame:
 			BEQ startDigging
 			;INB playerXBlockPos                 ;adjust xblockpos
 startDigging:
-
 			LDA playerXBlockPos                 ;align to 10px block horizontally
 			STA mapX
 			LDA playerYBlockPos
@@ -1189,7 +1169,6 @@ nextEnemy:
 			LDA enemyIndex		; lda enemyIndex
 			CPI 0x06			; cmp #$06 enemyIndex=0..5 ;process 6 enemies but note that only max 5 are ever drawn
 			BEQ waitVsyncAndReturn	; beq waitVsyncAndReturn
-
 			JPS loadEnemyPointer
 								; ldx enemyIndex
 								; inc enemyCounter,x
@@ -1200,18 +1179,15 @@ nextEnemy:
 			ANI 0x01			; and #$01
 			CPI 0x01
 			BEQ nextEnemy		;do not update this enemy if its counter is even
-
 			LDA enemyIndex		; cpx numberOfEnemies
 			CPA numberOfEnemies
 			BEQ updateEnemy
 			BCS delayLoop		; do a delay if this enemy is inactive // to keep a similar speed independent of number of active enemies
 			JPA updateEnemy		; update active (valid) enemies only
-
 waitVsyncAndReturn:
 								; lda #$13 ; Wait for vertical sync (0..16.6833)ms
 								;jmp OSBYTE ;*FX19
 			RTS
-
 delayLoop:	LXI 0x02			;delay loop
 			LYI 0x40
 delayLoop2:	JPS KeyHandler
@@ -1220,7 +1196,6 @@ delayLoop2:	JPS KeyHandler
 			DEX
 			BNE delayLoop2
 			JPA nextEnemy
-
 updateEnemy:
 			LDR enemyXPosLo
 			STA tmpXPosLo
@@ -1250,7 +1225,6 @@ updE01:		LDR enemyYBlkInternalDecimalOffset
 			CPI 0x00
 			BNE preCheckSpecialCases
 ; enemy is vertically aligned to 10px block
-
 			LDR enemyYBlockPos		;lda enemyYBlockPos,x
 			STA mapY
 			LDR enemyXBlockPos
@@ -1487,7 +1461,6 @@ ueCountdownRespawn:
 			DEC
 			STR enemyRespawnCountdown
 			JPA ueCheckSpecialCases
-
 ueDoneClimbingOutOrRespawning:
 			JPS KeyHandler
 			LDI 0x00
@@ -1496,6 +1469,9 @@ ueDoneClimbingOutOrRespawning:
 ; enemy is no longer either climbing out of a hole or respawning after getting
 ; trapped in a hole. So now we check for collision with the player and update
 ; the enemy position (moves enemy towards the player if possible)
+;{{Der Feind klettert nicht mehr aus einem Loch oder erscheint wieder, nachdem er es erreicht hat
+; in einem Loch gefangen. Jetzt prüfen wir, ob eine Kollision mit dem Player vorliegt, und führen ein Update durch
+; die Position des Feindes (bewegt den Feind, wenn möglich, auf den Spieler zu)}}
 			LDR enemyYBlockPos					;lda enemyYBlockPos,x
 			CPA playerYBlockPos                 ;cmp playerYBlockPos
 			BEQ ueEnemyAtSameBlockRowAsPlayer   ;beq ueEnemyAtSameBlockRowAsPlayer
@@ -1513,6 +1489,11 @@ uePreCheckEnemyXPos:
 ; obstruction
 ; first, check if another enemy is obstructing the current enemy by being
 ; directly below it
+;{{Der Feind befindet sich weiter oben auf dem Bildschirm als der Spieler
+; Wenn wir wollen, dass sich der Feind auf den Spieler zubewegt, darf es keins geben
+; Obstruktion
+; Überprüfen Sie zunächst, ob ein anderer Feind den aktuellen Feind behindert
+; direkt darunter}}
 ueEnemyHigherThanPlayer:
 			STA mapY
 			JPS KeyHandler
@@ -1601,6 +1582,10 @@ ueScanRowsRightOfEnemy:
 			CPI 0x32                            ;escape ladder
 			BEQ ueDetermineEnemyDirection
 			INB distanceToPassageGoingRight     ;increase distance to nearest passage of moving right and down to reach the player
+			;tya
+			;sec
+			;sbc #$1c
+			;tay
 			INY									; DEY 	;iny
 			TYA
 			CPI 0x1c							;cpy #$1c
@@ -1654,7 +1639,6 @@ ueEnemyStartsFalling:
 			LDI 0x28
 			STA enemyFrameNumber				;sta enemyFrameNumber                ;select enemy up/down frame #3 (falling)
 			JPA ueCheckSpecialCases
-
 ueEnemyMovingDownLadder:
 			LDR enemyFrames						;LDA enemyFrames,x
 			CPI 0x26
@@ -1725,6 +1709,8 @@ ueScanRowsLeftOfEnemy2:
 			PHS JPS loadEnemyPtrM PLS			;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
 			CPI 0x04                            ;line
 			BEQ ueIncDistanceToLeft
+			;CPI 0x03                            ;hack3
+			;BEQ ueIncDistanceToLeft
 			TYA									;tya
 												;clc
 			ADI 0x1c							;adc #$1c
@@ -1735,8 +1721,8 @@ ueScanRowsLeftOfEnemy2:
 			TYA
 			PHS JPS loadEnemyPtrM PLS			;sec ;sbc #$1c ;tay ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
 			CPI 0x03                            ;ladder
-			BEQ ueStartScanningRowsRightOfEnemy2
-			CPI 0x01                            ;brick
+			BEQ hack1							;ueStartScanningRowsRightOfEnemy2
+			CPI 0x01       ;brick
 			BEQ ueMovingLeftAndUpImpossible
 			CPI 0x02                            ;solid block
 			BEQ ueMovingLeftAndUpImpossible
@@ -1746,6 +1732,22 @@ ueIncDistanceToLeft:
 			INB distanceToPassageGoingLeft      ;increase distance to nearest passage of moving left and up to reach the player
 			DEY
 			BPL ueScanRowsLeftOfEnemy2          ;scan until left edge of screen
+			JPA ueMovingLeftAndUpImpossible
+hack1:		LDA ptrM+0							;check box above the ladder
+			STA lEaddr+0
+			LDA ptrM+1
+			STA lEaddr+1
+			LDI 0x1c
+			SBY
+			SBW lEaddr
+			LDR lEaddr
+			CPI 0x01
+			BEQ ueIncDistanceToLeft
+			CPI 0x02
+			BEQ ueIncDistanceToLeft
+			CPI 0x31
+			BEQ ueIncDistanceToLeft
+			JPA ueStartScanningRowsRightOfEnemy2	; finished passage to the left found
 ueMovingLeftAndUpImpossible:
 			LDI 0xff
 			STA distanceToPassageGoingLeft      ;$ff means there is no route going left
@@ -1756,6 +1758,8 @@ ueScanRowsRightOfEnemy2:
 			PHS JPS loadEnemyPtrM PLS			;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
 			CPI 0x04                            ;line
 			BEQ ueIncDistanceToRight
+			;CPI 0x03                            ;hack3
+			;BEQ ueIncDistanceToRight
 			TYA
 			ADI 0x1c							;clc ;adc #$1c
 												;tay
@@ -1765,7 +1769,7 @@ ueScanRowsRightOfEnemy2:
 			TYA
 			PHS JPS loadEnemyPtrM PLS			;sec ;sbc #$1c ;tay ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
 			CPI 0x03                            ;ladder
-			BEQ ueDetermineEnemyDirection2
+			BEQ hack2							;ueDetermineEnemyDirection2
 			CPI 0x01                            ;brick
 			BEQ ueMovingRightAndUpImpossible
 			CPI 0x02                            ;solid block
@@ -1778,6 +1782,22 @@ ueIncDistanceToRight:
 			TYA
 			CPI 0x1c
 			BNE ueScanRowsRightOfEnemy2         ;scan until right edge of screen
+			JPA ueMovingRightAndUpImpossible
+hack2:		LDA ptrM+0							;check box above the ladder
+			STA lEaddr+0
+			LDA ptrM+1
+			STA lEaddr+1
+			LDI 0x1c
+			SBY
+			SBW lEaddr
+			LDR lEaddr
+			CPI 0x01                            ;brick
+			BEQ ueIncDistanceToRight
+			CPI 0x02
+			BEQ ueIncDistanceToRight
+			CPI 0x31
+			BEQ ueIncDistanceToRight
+			JPA ueDetermineEnemyDirection2	; finished passage to the right found
 ueMovingRightAndUpImpossible:
 			LDI 0xff
 			STA distanceToPassageGoingRight     ;$ff means there is no route going right
@@ -1870,7 +1890,6 @@ ueSetEnemy2:
 			;sbc #$00
 			;sta enemyYBlockPos,x
 			JPA ueCheckSpecialCases
-
 ueCheckEnemyXPos:
 			LDR enemyXBlockPos			;lda enemyXBlockPos,x ;we already know that enemy ypos equals player ypos (in blocks)
 			CPA playerXBlockPos			;cmp playerXBlockPos
@@ -1894,7 +1913,6 @@ ueCheckEnemyToTheRight:
 			LDS 1
 			CPX							;cmp enemyYBlockPos,y
 			BNE ueNextEnemyToTheRight
-
 			LDR enemyXBlockPos			;lda enemyXBlockPos,x
 										;clc
 			INC							;adc #$01
@@ -1909,7 +1927,6 @@ ueCheckEnemyToTheRight:
 			; von anderem Feind blockiert
 			PLS
 			JPA ueCheckSpecialCases		;another enemy is blocking this enemy from moving to the right
-
 ueNextEnemyToTheRight:
 			DEY
 			PLS
@@ -1962,7 +1979,6 @@ ueSetHangingOnLineFrameB:
 			ADI 0x29					;adc #$29
 			STA enemyFrameNumber		;sta enemyFrameNumber ;select correct frame for hanging on a line
 			JPA ueMoveRightUpdatePos
-
 ueWalkRight:
 			LDR enemyFrames				;lda enemyFrames,x
 			CPI 0x20
@@ -1970,7 +1986,6 @@ ueWalkRight:
 			CPI 0x23
 			BCS ueSetWalkingRightFrameA
 			JPA ueSetWalkingRightFrameB
-
 ueSetWalkingRightFrameA:
 			LDI 0x20
 ueSetWalkingRightFrameB:
@@ -2030,7 +2045,6 @@ ueNextEnemyToTheLeft:
 			PLS
 			BPL ueCheckEnemyToTheLeft
 ; no enemy blocking this enemy to the left, but maybe something else?
-
 			LDR enemyYBlockPos			;lda enemyYBlockPos,x
 			STA mapY
 			JPS calcTileMapRowPtr
@@ -2049,7 +2063,6 @@ uePossiblyMoveLeftIfAligned:
 			CPI 0x00
 			BNE ueCheckIfMoveLeftOnLine
 			JPA ueCheckSpecialCases		;cannot move left
-
 ueCheckIfMoveLeftOnLine:				; hier gehts nur noch nach links Frame auswählen
 			LDR enemyXBlockPos			;ldy enemyXBlockPos,x
 			TAY
@@ -2073,7 +2086,6 @@ ueSetHangingOnLineFrameB2:
 			ADI 0x2c					;adc #$29
 			STA enemyFrameNumber		;select correct frame for hanging on a line
 			JPA ueMoveLeftUpdatePos
-
 ueWalkLeft:
 			LDR enemyFrames				;lda enemyFrames,x
 			CPI 0x23
@@ -2268,7 +2280,8 @@ ueRedrawEnemy:
 			;DEB enemyIndex
 			;BMI ueDone
 			JPA nextEnemy			;repeat until all enemies are updates and redrawn
-ueDone:		RTS
+ueDone:
+			RTS
 uePlotEnemy:
 			;LDX enemyIndex
 			LDR enemyXPosLo
@@ -2386,6 +2399,7 @@ dlNextTile:	INW tileMapPtr
 			INB mapY
 			CPI 16
 			BNE dl01
+			; Spielfeld fertig
 			JPS drawStrongLine
 			LDI 23
 			STA _YPos
@@ -2414,12 +2428,10 @@ printHighscore:
 			LDI 9 STA _XPos
 			JPS printLine
 			'CLASSIC LODE RUNNER',0,
-
 			INB _YPos INB _YPos
 			LDI 10 STA _XPos
 			JPS printLine
 			'LOCAL HIGH SCORES',0,
-
 			INB _YPos INB _YPos
 			LDI 5 STA _XPos
 			JPS printLine
@@ -2442,7 +2454,6 @@ printHS1:	LDI '0' PHS JPS printCharXY PLS
 			TXA
 			ADI 48 PHS JPS printCharXY PLS
 printHS2:	LDI '.' PHS JPS printCharXY PLS
-
 			LDI 3 ADW _XPos
 			LDI 11 STA tmp05						; name 11 characters
 printHS3:	LDR ptrM PHS JPS printCharXY PLS		; write names
@@ -2486,7 +2497,6 @@ nxtHGR2:	LDR ptr1					; score byte
 			CPA tmp01					; list byte - score byte
 			BEQ nxtHGR2a				; decimal place is the same
 			BCS nxtHGR3					; Decimal place is larger in list
-
 			LDI 16 ADW ptrM				; to the next index in the list
 			DEB counterHGR
 			BEQ zuwenig
@@ -2511,8 +2521,10 @@ nxtHGR3a:	DEW ptr1 DEW ptrE
 			DEB counterHGR
 			BNE nxtHGR3a
 			JPA nxtHGR3a2
-nxtHGR3a1:	LDI 15 SBW ptrM				; to the first byte of the entry in the list
-nxtHGR3a2:	LDI 10 STA _XPos
+nxtHGR3a1:
+			LDI 15 SBW ptrM				; to the first byte of the entry in the list
+nxtHGR3a2:
+			LDI 10 STA _XPos
 			LDI 9 STA _YPos
 			JPS printLine
 			'  *******************  ',0,
@@ -2598,7 +2610,6 @@ de_delcheck:
 			DEX BCC saveHighRTS                 ; write took too long => ERROR!!!
 			LDR PtrA CPI 0 BNE de_delcheck      ; re-read FLASH location -> data okay?
 			JPA loadHighscore
-
 saveHighRTS:	RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 loadHighscore:
@@ -2629,8 +2640,8 @@ fileNameHGS: 'highscore.lr',0,
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bcdAdd:		;CLB bcdC		; carry = 0 must be set in the calling program
 			JPS bcdNib
-			LDA tmp1		
-			STA result		
+			LDA tmp1		;{{ergebnis in tmp1
+			STA result		;{{merken
 			LDA sum1
 			RL5
 			STA sum1
@@ -2656,7 +2667,6 @@ bcdNib:		LDA sum1
 			STA tmp1
 			INB bcdC
 done:		RTS
-
 result:		0x00,
 tmp1:		0x00,
 bcdC:		0x00,
@@ -2748,7 +2758,6 @@ printLevel:
 			LDA level
 			PHS JPS printThreeDigitNumber PLS
 			RTS
-
 printThreeDigitNumber:			;
 			LDI 100
 			STA tmp03
@@ -2964,7 +2973,6 @@ drawOrErasePlayerSprite:
 			LDA oldPlayerFrameNumber
 			STA spriteId
 ; spriteId is sprite number, xpos16 is 16-bit ypos8 is ypos
-
 plotSprite14x14:
 			LDA xpos16+0
 			ANI 7
@@ -2997,14 +3005,12 @@ plotSprite14x14:
 			STA spritePtr+1
 			LDI 14
 			STA lineCnt
-
 lineloop:   LDR spritePtr
 			STA buffer+0
 			INW spritePtr
 			LDR spritePtr
 			STA buffer+1
 			CLB buffer+2
-
 			LXA shift
 			DEX
 			BCC shiftdone
@@ -3059,7 +3065,6 @@ key_entry:
 			CPI 0x29			; kay space
 			BEQ is_pressed
 key_rts:	RTS
-
 is_left:    LDA pressed STA _left ORI 1 STA pressed CLB _right RTS
 is_right:	LDA pressed STA _right ORI 1 STA pressed CLB _left RTS
 is_up:		LDA pressed STA _up ORI 1 STA pressed CLB _down RTS
@@ -3069,7 +3074,6 @@ is_digRight:	LDA pressed STA _digRight ORI 1 STA pressed CLB _digLeft RTS
 is_escape:	LDA pressed STA _escape ORI 1 STA pressed RTS
 is_quit:	LDA pressed STA _quit ORI 1 STA pressed RTS
 is_pressed: LDA pressed STA _pressed ORI 1 STA pressed RTS
-
 release:    CLB released_cntr				; IMPROVED PS2 RELEASE DETECTION by Michael Kamprath - Verbesserte PS2 losgelassen Erkennung
 key_wait:	INK								; PS/2 Input and Clear - poll for max. 10.1ms
 			CPI 0xff
@@ -3081,7 +3085,6 @@ key_wait:	INK								; PS/2 Input and Clear - poll for max. 10.1ms
             JPA key_rts						; no 2nd datagram -> avoid
 key_release: CLB pressed						; released key was received -> analyze it
 			JPA key_entry
-
 released_cntr:  0
 _right: 0
 _left: 0
@@ -3241,12 +3244,10 @@ loadEnemyPointer:
 			LDA enemyIndex				; 0..5
 			LSL							; enemy index =*2
 			ADW enemyXBlockPos
-
 			LDR enemyXBlockPos
 			PHS
 			INW enemyXBlockPos
 			LDR enemyXBlockPos
-
 			STA enemyXBlockPos+1
 			STA enemyYBlockPos+1
 			STA enemyXBlkInternalDecimalOffset+1
@@ -3320,7 +3321,6 @@ m001:		LDI 22 ADW PtrA JPS OS_FlashA                ; search for target addr | S
 			LDR PtrA STA PtrB+1 INW PtrA JPS OS_FlashA
 			LDA PtrA+0 STA PtrC+0 LDA PtrA+1 STA PtrC+1 LDA PtrA+2 STA PtrC+2	; PtrC = PtrA
 			; hier noch größe prüfen PtrB
-
 loadFlashLevel:
 			LDA PtrC+0 STA PtrA+0 LDA PtrC+1 STA PtrA+1 LDA PtrC+2 STA PtrA+2	; PtrA = PtrC
 			LXA level
@@ -3384,13 +3384,10 @@ mapY:			0x00,
 numberOfGoldIngots: 0x00,
 playerSpriteFrames: 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x08,0x09,0x07,0x0b,0x0c,0x0a,0x0e,0x0d,0x0f,0x11,0x12,0x10,0x14,0x15,0x13,
 spriteNumbersAnimDigHole:	0x1c,0x1b,0x1a,0x19,0x18,0x01,
-
 playerMapPtr:	0x0000,			; ($76,$77)
-
 tmpXPosLo:	0x00,
 tmpXPosHi:	0x00,
 tmpYPos:	0x00,
-
 oldPlayerFrameNumber:	0x00,
 playerFrameNumber: 0x00,
 oldPlayerXPosLo: 0x00,
@@ -3402,7 +3399,6 @@ playerXBlkInternalDecimalOffset: 0x00,
 playerYBlkInternalDecimalOffset: 0x00,
 playerDirection: 0x00,
 playerIsDead: 0x00,
-
 playerFalling:	0x00,
 allGoldCollected:	0x00,
 diggingHole:	0x00,
@@ -3411,20 +3407,17 @@ playingSoundAllGold:	0x00,
 soundIndexAllGold:	0x00,
 soundPitchWhileFalling:	0x00,
 indexAnimDigHole:	0x00,
-
 xPosDigHoleLo:	0x00,
 xPosDigHoleHi:	0x00,
 yPosDigHole:	0x00,
 xBlockPosDigHole:	0x00,
 yBlockPosDigHole:	0x00,
 soundCounterWhileFalling:	0x00,
-
 numberOfEnemies:	0x00,	;holds number of enemies - 1 (so $ff means no enemies)
 enemyIndex:	0x00,
 enemyFrameNumber:	0x00,
 distanceToPassageGoingLeft:	0x00,
 distanceToPassageGoingRight:	0x00,
-
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Array
 enemyXBlockPos:	0x0000,
@@ -3441,7 +3434,6 @@ enemyInHoleHeight:	0x0000,					;5=top of hole, 4, 3, 2, 1, 0=bottom of hole (5*2
 enemyInHoleCountdown:	0x0000,				;time spent by enemy in hole before climbing out, starting at &1E, counting down to 0
 enemyRespawnCountdown:	0x0000,				;countdown from 10 to 0 before enemy is respawned at the top of the screen after being buried (not just trapped) in a hole
 enemyHoldsGoldIngot:	0x0000,
-
 ; 6 * 15 Byte = 90
 enemyArray:		enemyArray0,enemyArray1,enemyArray2,enemyArray3,enemyArray4,enemyArray5,
 enemyArray0:	0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -3455,7 +3447,6 @@ enemyFrameOffset:
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 holeIndex:	0x00,
 holeAnimFrame:	0x00,
-
 holeFillCounters:	0x0000,		; don't change order!!!
 holeXBlockPos:	0x0000,
 holeYBlockPos:	0x0000,
@@ -3471,7 +3462,6 @@ holeArray:	0,0,0,				; If this array overflows, the part assignment in the map w
 			0,0,0,
 			0,0,0,
 			0,0,0,
-
 			0,0,0,
 			0,0,0,
 			0,0,0,
@@ -3775,7 +3765,6 @@ sprite51:
 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 levelData:
-
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -3842,7 +3831,16 @@ Highscore:
 	'           ', 0x00, 0x00,0x00,0x00,0x00,		; 08
 	'           ', 0x00, 0x00,0x00,0x00,0x00,		; 09
 	'           ', 0x00, 0x00,0x00,0x00,0x00,		; 10
-
+;	'TEST01     ', 0x01, 0x00,0x90,0x00,0x00,		; 01
+;	'TEST02     ', 0x01, 0x00,0x80,0x00,0x00,		; 02
+;	'TEST03     ', 0x01, 0x00,0x70,0x00,0x00,		; 03
+;	'TEST04     ', 0x01, 0x00,0x60,0x00,0x00,		; 04
+;	'TEST05     ', 0x01, 0x00,0x50,0x00,0x00,		; 05
+;	'TEST06     ', 0x01, 0x00,0x40,0x00,0x00,		; 06
+;	'TEST07     ', 0x01, 0x00,0x30,0x00,0x00,		; 07
+;	'TEST08     ', 0x01, 0x00,0x20,0x00,0x00,		; 08
+;	'TEST09     ', 0x01, 0x00,0x10,0x00,0x00,		; 09
+;	'           ', 0x00, 0x00,0x00,0x00,0x00,		; 10
 HiScTemp:
 	'           ', 0xff, 0xff,0xff,0xff,0xff,
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3863,7 +3861,6 @@ endOfData:									; maximum available memory up to 0xafff
 #org 0x000b _enemyInHoleCountdown:
 #org 0x000c _enemyRespawnCountdown:
 #org 0x000d _enemyHoldsGoldIngot:
-
 #org 0xb000 _Start:
 #org 0xb003 _Prompt:
 #org 0xb006 _ReadLine:
@@ -3894,7 +3891,6 @@ endOfData:									; maximum available memory up to 0xafff
 #org 0xb051 _ScrollUp:
 #org 0xb054 _ScrollDn:
 #org 0xb057 _ResetPS2:
-
 #org 0xbcb0 _ReadPtr:
 #org 0xbcb2 _ReadNum:
 #org 0xbcb5 PtrA:                        ; lokaler pointer (3 bytes) used for FLASH addr and bank
@@ -3904,4 +3900,3 @@ endOfData:									; maximum available memory up to 0xafff
 #org 0xbccc _XPos:
 #org 0xbccd _YPos:
 #org 0xbcce _ReadBuffer:
-
