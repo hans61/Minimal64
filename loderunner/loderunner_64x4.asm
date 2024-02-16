@@ -1709,19 +1709,17 @@ ueScanRowsLeftOfEnemy2:
             PHS JPS loadEnemyPtrM PLS ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
             CPI 0x04          ;line
             BEQ ueIncDistanceToLeft
-                              ;CPI 0x03                            ;hack3
-                              ;BEQ ueIncDistanceToLeft
-            LDZ 1             ;tya
-                              ;clc
-            ADI 0x1c          ;adc #$1c
-                              ;TAY                                    ;tay
+			CPI 0x03                            ;hack2
+			BEQ hack2a
+			LDZ 1 									;tya
+			ADI 0x1c							;clc ;adc #$1c
             PHS JPS loadEnemyPtrM PLS ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile directly below enemy
             CPI 0x00
             BEQ ueMovingLeftAndUpImpossible ;empty tile
-            LDZ 1
+hack2a:		LDZ 1
             PHS JPS loadEnemyPtrM PLS ;sec ;sbc #$1c ;tay ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
             CPI 0x03          ;ladder
-            BEQ hack1         ;ueStartScanningRowsRightOfEnemy2
+            BEQ hack1a         ;ueStartScanningRowsRightOfEnemy2
             CPI 0x01          ;brick
             BEQ ueMovingLeftAndUpImpossible
             CPI 0x02          ;solid block
@@ -1733,7 +1731,7 @@ ueIncDistanceToLeft:
             DEZ 1
             BPL ueScanRowsLeftOfEnemy2 ;scan until left edge of screen
             JPA ueMovingLeftAndUpImpossible
-hack1:        LDB ptrM+0      ;check box above the ladder
+hack1a:     LDB ptrM+0      ;check box above the ladder
             STB lEaddr+0
             LDB ptrM+1
             STB lEaddr+1
@@ -1758,18 +1756,17 @@ ueScanRowsRightOfEnemy2:
             PHS JPS loadEnemyPtrM PLS ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
             CPI 0x04          ;line
             BEQ ueIncDistanceToRight
-                              ;CPI 0x03                            ;hack3
-                              ;BEQ ueIncDistanceToRight
-            LDZ 1
-            ADI 0x1c          ;clc ;adc #$1c
-                              ;tay
+			CPI 0x03                            ;hack2
+			BEQ hack2b
+			LDZ 1
+			ADI 0x1c							;clc ;adc #$1c ;tay
             PHS JPS loadEnemyPtrM PLS ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile directly below enemy
             CPI 0x00
             BEQ ueMovingRightAndUpImpossible
-            LDZ 1
+hack2b:		LDZ 1
             PHS JPS loadEnemyPtrM PLS ;sec ;sbc #$1c ;tay ;lda ($80),y ; A = (ptrM),A = *(ptrM+A) ;inspect tile at exact location of enemy
             CPI 0x03          ;ladder
-            BEQ hack2         ;ueDetermineEnemyDirection2
+            BEQ hack1b         ;ueDetermineEnemyDirection2
             CPI 0x01          ;brick
             BEQ ueMovingRightAndUpImpossible
             CPI 0x02          ;solid block
@@ -1783,7 +1780,7 @@ ueIncDistanceToRight:
             CPI 0x1c
             BNE ueScanRowsRightOfEnemy2 ;scan until right edge of screen
             JPA ueMovingRightAndUpImpossible
-hack2:        LDB ptrM+0      ;check box above the ladder
+hack1b:		LDB ptrM+0      ;check box above the ladder
             STB lEaddr+0
             LDB ptrM+1
             STB lEaddr+1
