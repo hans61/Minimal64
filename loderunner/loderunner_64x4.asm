@@ -1545,6 +1545,8 @@ ueScanRowsLeftOfEnemy:
             BEQ ueStartScanningRowsRightOfEnemy ;empty tile
             CPI 0x03          ;ladder
             BEQ ueStartScanningRowsRightOfEnemy
+			CPI 0x04							; hack3 enemy can go down if there is a line
+			BEQ ueStartScanningRowsRightOfEnemy
             CPI 0x31          ;trapdoor
             BEQ ueStartScanningRowsRightOfEnemy
             CPI 0x32          ;escape ladder
@@ -1577,11 +1579,13 @@ ueScanRowsRightOfEnemy:
             BEQ ueDetermineEnemyDirection ;empty tile
             CPI 0x03          ;ladder
             BEQ ueDetermineEnemyDirection
+			CPI 0x04							; hack3 enemy can go down if there is a line
+			BEQ ueDetermineEnemyDirection
             CPI 0x31          ;trapdoor
             BEQ ueDetermineEnemyDirection
             CPI 0x32          ;escape ladder
             BEQ ueDetermineEnemyDirection
-            INB distanceToPassageGoingRight ;increase distance to nearest passage of moving right and down to reach the player
+            INB distanceToPassageGoingRight		;increase distance to nearest passage of moving right and down to reach the player
                               ;tya
                               ;sec
                               ;sbc #$1c
