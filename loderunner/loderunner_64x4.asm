@@ -1,4 +1,4 @@
-#org 0x0070 delayValue:       ; to adjust the game speed (Minimal 64 40, Minimal 64x4 70)
+#org 0x0080 delayValue:       ; to adjust the game speed (Minimal 64 40, Minimal 64x4 70)
 #org 0x0096 _lastLevel:       ; &96 = 150 this must correspond to the loderunner.dat file
 #org 0x430c ViewPort:
 #org 0x8000
