@@ -33,4 +33,8 @@ to do:
 
 ## Picture
 
-![Lode Runner](loderunner.jpg)
+![Lode Runner](pic/loderunner.jpg)
+
+Since the hunters' algorithm is not like Apple's ][, the game requires a slightly different strategy. But it is playable, I have already made it past level 60. 
+
+![Lode Runner Level](pic/level-58.jpg)
