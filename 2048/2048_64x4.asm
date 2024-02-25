@@ -236,22 +236,18 @@ chk05:    LDB idxB PHS JPS loadArray PLS ; A = array(idxB)
         LDB delta AD.B idxB
         JPA chk05
         
-chk06:    CPB tmp01
+chk06:  CPB tmp01
         BNE chk07
         LDB idxA PHS JPS incArray PLS
         CPI 11
-        BEQ chk09             ; 2048 reached
-        LDB delta AD.B idxA
-        JPA chk02
-chk07:    LDB delta AD.B idxA
-        JPA chkLoop
-chk09:    LDI 0x01            ; Game Over Winner
+        BNE chk09			; not 2048 reached
+		LDI 0x01            ; Game Over Winner
         STB gameWin
-		LDI 0x00 PHS
-		LDB idxB PHS
-		JPS storeArray PLS PLS		; array(idxB) = 0
-
-chkRTS:    RTS
+chk09:	LDB delta AD.B idxA
+        JPA chk02
+chk07:	LDB delta AD.B idxA
+        JPA chkLoop
+chkRTS:	RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
 ; input: PHS arrayValue; PHS arrayIndex
 storeArray:

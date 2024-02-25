@@ -240,16 +240,13 @@ chk06:	CPA tmp01
 		BNE chk07
 		LDA idxA PHS JPS incArray PLS
 		CPI 11
-		BEQ chk09									; 2048 reached
-		LDA delta ADB idxA
+		BNE chk09									; not 2048 reached
+		LDI 0x01									; Game Over Winner
+		STA gameWin
+chk09:	LDA delta ADB idxA
 		JPA chk02
 chk07:	LDA delta ADB idxA
 		JPA chkLoop
-chk09:	LDI 0x01									; Game Over Winner
-		STA gameWin
-		LDI 0x00 PHS
-		LDA idxB PHS
-		JPS storeArray PLS PLS		; array(idxB) = 0
 chkRTS:	RTS
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~		
 ; input: PHS arrayValue; PHS arrayIndex
